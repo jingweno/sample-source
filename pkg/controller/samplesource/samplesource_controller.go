@@ -18,8 +18,10 @@ package samplesource
 
 import (
 	"context"
+	"fmt"
 
 	sourcesv1alpha1 "github.com/heroku/sample-source/pkg/apis/sources/v1alpha1"
+	"github.com/knative/eventing-sources/pkg/controller/sinks"
 	"k8s.io/apimachinery/pkg/api/equality"
 	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -117,5 +119,22 @@ func (r *ReconcileSampleSource) Reconcile(request reconcile.Request) (reconcile.
 }
 
 func (r *ReconcileSampleSource) reconcile(ctx context.Context, instance *sourcesv1alpha1.SampleSource) error {
+	sinkURI, err := r.resolveSinkRef(ctx, instance)
+	if err != nil {
+		return fmt.Errorf("Failed to get sink URI: %v", err)
+	}
+
+	// Set the SinkURI field on the SampleSource Status.
+	instance.Status.SinkURI = sinkURI
+
 	return nil
+}
+
+func (r *ReconcileSampleSource) resolveSinkRef(ctx context.Context, instance *sourcesv1alpha1.SampleSource) (string, error) {
+	// Make sure the reference is not nil.
+	if instance.Spec.Sink == nil {
+		return "", fmt.Errorf("sink reference is nil")
+	}
+
+	return sinks.GetSinkURI(ctx, r.Client, instance.Spec.Sink, instance.Namespace)
 }
