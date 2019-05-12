@@ -131,10 +131,5 @@ func (r *ReconcileSampleSource) reconcile(ctx context.Context, instance *sources
 }
 
 func (r *ReconcileSampleSource) resolveSinkRef(ctx context.Context, instance *sourcesv1alpha1.SampleSource) (string, error) {
-	// Make sure the reference is not nil.
-	if instance.Spec.Sink == nil {
-		return "", fmt.Errorf("sink reference is nil")
-	}
-
 	return sinks.GetSinkURI(ctx, r.Client, instance.Spec.Sink, instance.Namespace)
 }
