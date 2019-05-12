@@ -21,6 +21,7 @@ import (
 
 	"github.com/onsi/gomega"
 	"golang.org/x/net/context"
+	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
 )
@@ -34,7 +35,15 @@ func TestStorageSampleSource(t *testing.T) {
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      "foo",
 			Namespace: "default",
-		}}
+		},
+		Spec: SampleSourceSpec{
+			Sink: &corev1.ObjectReference{
+				Name:       "fooservice",
+				APIVersion: "v1",
+				Kind:       "Service",
+			},
+		},
+	}
 	g := gomega.NewGomegaWithT(t)
 
 	// Test Create
@@ -47,6 +56,9 @@ func TestStorageSampleSource(t *testing.T) {
 	// Test Updating the Labels
 	updated := fetched.DeepCopy()
 	updated.Labels = map[string]string{"hello": "world"}
+	updated.Status = SampleSourceStatus{
+		SinkURI: "http://example.com",
+	}
 	g.Expect(c.Update(context.TODO(), updated)).NotTo(gomega.HaveOccurred())
 
 	g.Expect(c.Get(context.TODO(), key, fetched)).NotTo(gomega.HaveOccurred())
