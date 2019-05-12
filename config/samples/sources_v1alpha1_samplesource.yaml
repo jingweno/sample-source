@@ -28,7 +28,7 @@ metadata:
   name: samplesource-sample
 spec:
   sink:
-    apiVersion: sources.knative.dev/v1alpha1
-    kind: TestSink
-    name: foosink
+    apiVersion: serving.knative.dev/v1alpha1
+    kind: Service
+    name: http-handler
     namespace: default

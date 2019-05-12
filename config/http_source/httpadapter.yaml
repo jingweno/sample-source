@@ -1,0 +1,20 @@
+apiVersion: serving.knative.dev/v1alpha1
+kind: Service
+metadata:
+  name: http-adapter
+  namespace: default
+spec:
+  runLatest:
+    configuration:
+      revisionTemplate:
+        metadata:
+          annotations:
+            autoscaling.knative.dev/minScale: "1"
+        spec:
+          container:
+            env:
+            - name: PORT
+              value: "5000"
+            - name: SINK_URI
+              value: "http://http-handler.default.svc.cluster.local/"
+            image: github.com/heroku/sample-source/cmd/httpadapter
