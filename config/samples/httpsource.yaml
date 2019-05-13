@@ -1,0 +1,35 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: httpsource-test
+---
+
+apiVersion: sources.knative.dev/v1alpha1
+kind: SampleSource
+metadata:
+  name: httpsource
+  namespace: httpsource-test
+spec:
+  sink:
+    apiVersion: serving.knative.dev/v1alpha1
+    kind: Service
+    name: httphandler
+    namespace: httpsource
+
+---
+
+apiVersion: serving.knative.dev/v1alpha1
+kind: Service
+metadata:
+  name: httphandler
+  namespace: httpsource-test
+spec:
+  runLatest:
+    configuration:
+      revisionTemplate:
+        metadata:
+          annotations:
+            autoscaling.knative.dev/minScale: "1"
+        spec:
+          container:
+            image: jingweno/httphandler-c4db8cc9ffb5538bbf6cc07670e5e08e

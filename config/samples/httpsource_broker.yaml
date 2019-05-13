@@ -1,0 +1,50 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: httpsource-broker-test
+
+---
+
+apiVersion: sources.knative.dev/v1alpha1
+kind: SampleSource
+metadata:
+  name: httpsource
+  namespace: httpsource-broker-test
+spec:
+  sink:
+    apiVersion: eventing.knative.dev/v1alpha1
+    kind: Broker
+    name: httphandler
+    name: default
+
+---
+
+apiVersion: eventing.knative.dev/v1alpha1
+kind: Trigger
+metadata:
+  name: testevents-trigger
+  namespace: httpsource-broker-test
+spec:
+  subscriber:
+    ref:
+      apiVersion: serving.knative.dev/v1alpha1
+      kind: Service
+      name: httphandler
+
+---
+
+apiVersion: serving.knative.dev/v1alpha1
+kind: Service
+metadata:
+  name: httphandler
+  namespace: httpsource-broker-test
+spec:
+  runLatest:
+    configuration:
+      revisionTemplate:
+        metadata:
+          annotations:
+            autoscaling.knative.dev/minScale: "1"
+        spec:
+          container:
+            image: jingweno/httphandler-c4db8cc9ffb5538bbf6cc07670e5e08e
